@@ -41,7 +41,6 @@ if __name__ == '__main__':
     load_dotenv()
     bitly_token = os.getenv('BITLY_TOKEN')
     url = input('Введите ссылку: ')
-    is_bitlink = check_bitlink(url)
     try:
         check_bitlink(url) is True
         bitlink = cut_link(bitly_token, url)
