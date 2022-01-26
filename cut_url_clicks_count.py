@@ -1,12 +1,12 @@
 import requests
 import re
+import os
+from dotenv import load_dotenv
 from urllib.parse import urlparse
 
-from settings import SECRET_TOKEN
 
-
-def cutting_link(token, url):
-    url_template = 'https://api-ssl.bitly.com/v4/bitlinks'
+def cut_link(token, url):
+    url_template = 'https://api-ssl.bitly.com/v4/bitlinks/'
     headers = {
         'Authorization': f'Bearer {token}',
     }
@@ -18,7 +18,7 @@ def cutting_link(token, url):
     return response.json()["id"]
 
 
-def counting_clicks(token, bitlink):
+def count_clicks(token, bitlink):
     url_template = 'https://api-ssl.bitly.com/v4/bitlinks/' \
                    f'{bitlink}/clicks/summary'
     headers = {
@@ -34,25 +34,22 @@ def counting_clicks(token, bitlink):
 
 def check_bitlink(url):
     parsed = urlparse(url)
-    if parsed.netloc != 'bit.ly':
-        return True
-    return False
+    return parsed.netloc != 'bit.ly'
 
 
 if __name__ == '__main__':
-    token = SECRET_TOKEN
+    load_dotenv()
+    bitly_token = os.getenv('BITLY_TOKEN')
     url = input('Введите ссылку: ')
-    checked_url = check_bitlink(url)
-    if checked_url is True:
-        bitlink = cutting_link(token, url)
-    else:
+    is_bitlink = check_bitlink(url)
+    try:
+        check_bitlink(url) is True
+        bitlink = cut_link(bitly_token, url)
+    except requests.exceptions.HTTPError:
         bitlink = re.sub(r'(https|http)?:\/\/', '', url)
+    print('Битлинк:', bitlink)
     try:
-        print('Битлинк:', bitlink)
-    except requests.exceptions.HTTPError as url_error:
-        print('Ошибка ссылки:', url_error)
-    counter = counting_clicks(token, bitlink)
-    try:
-        print('Всего кликов по ссылке:', counter)
-    except requests.exceptions.HTTPError as count_error:
-        print('Ошибка подсчета кликов:', count_error)
+        counter = count_clicks(bitly_token, bitlink)
+    except requests.exceptions.HTTPError:
+        counter = 'Ошибка подсчета кликов!'
+    print('Всего кликов по ссылке:', counter)
