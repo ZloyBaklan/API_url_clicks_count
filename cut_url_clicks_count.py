@@ -1,8 +1,7 @@
 import requests
-import re
 import os
 from dotenv import load_dotenv
-from urllib.parse import urlparse
+# from urllib.parse import urlparse
 
 
 def cut_link(token, url):
@@ -32,9 +31,20 @@ def count_clicks(token, bitlink):
     return response.json()["total_clicks"]
 
 
-def check_bitlink(url):
-    parsed = urlparse(url)
-    return parsed.netloc != 'bit.ly'
+def check_bitlink(url, token):
+    url_template = f'https://api-ssl.bitly.com/v4/bitlinks/{url}'
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    # parsed = urlparse(url)
+    '''
+    Получается абсолютно нет смысла пользоваться данной библиотекой,
+    хотя в задании рекомендуют ее использовать,
+    если нам надо опять делать запрос и просто проверять
+    существует ли данный битлинк или он еще не создан...
+    '''
+    response = requests.get(url_template,  headers=headers)
+    return response.ok
 
 
 if __name__ == '__main__':
@@ -42,13 +52,9 @@ if __name__ == '__main__':
     bitly_token = os.getenv('BITLY_TOKEN')
     url = input('Введите ссылку: ')
     try:
-        check_bitlink(url) is True
+        check_bitlink(url, bitly_token) is True
+        counter = count_clicks(bitly_token, url)
+        print('Всего кликов по ссылке:', counter)
+    except requests.exceptions.HTTPError:
         bitlink = cut_link(bitly_token, url)
-    except requests.exceptions.HTTPError:
-        bitlink = re.sub(r'(https|http)?:\/\/', '', url)
-    print('Битлинк:', bitlink)
-    try:
-        counter = count_clicks(bitly_token, bitlink)
-    except requests.exceptions.HTTPError:
-        counter = 'Ошибка подсчета кликов!'
-    print('Всего кликов по ссылке:', counter)
+        print('Битлинк:', bitlink)
