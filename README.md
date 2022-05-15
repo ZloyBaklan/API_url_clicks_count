@@ -30,9 +30,11 @@ pip install -r requirements.txt
 python cut_url_clicks_count.py 
 ```
 
-Вводим ссылку в терминал(вместе с http..), например:
+Вводим ссылку в терминал(вместе с http или https..), например:
 ``` 
 https://klubsadprof.ru/
+
+http://info.cern.ch/hypertext/WWW/TheProject.html
 ```
 Получаем битлинк и количество кликов по нему.
 

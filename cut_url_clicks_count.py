@@ -1,7 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
-# from urllib.parse import urlparse
+from urllib.parse import urlparse
 
 
 def cut_link(token, url):
@@ -14,12 +14,14 @@ def cut_link(token, url):
     }
     response = requests.post(url_template, headers=headers, json=payload)
     response.raise_for_status()
-    return response.json()["id"]
+    return response.json()["link"]
 
 
 def count_clicks(token, bitlink):
+    parsed = urlparse(bitlink)
+    parsed_summary = parsed.netloc + parsed.path
     url_template = 'https://api-ssl.bitly.com/v4/bitlinks/' \
-                   f'{bitlink}/clicks/summary'
+                   f'{parsed_summary}/clicks/summary'
     headers = {
         'Authorization': f'Bearer {token}',
     }
@@ -36,13 +38,6 @@ def check_bitlink(url, token):
     headers = {
         'Authorization': f'Bearer {token}',
     }
-    # parsed = urlparse(url)
-    '''
-    Получается абсолютно нет смысла пользоваться данной библиотекой,
-    хотя в задании рекомендуют ее использовать,
-    если нам надо опять делать запрос и просто проверять
-    существует ли данный битлинк или он еще не создан...
-    '''
     response = requests.get(url_template,  headers=headers)
     return response.ok
 
