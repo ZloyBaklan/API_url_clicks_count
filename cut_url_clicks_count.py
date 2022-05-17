@@ -41,17 +41,19 @@ def check_bitlink(url, token):
         'Authorization': f'Bearer {token}',
     }
     response = requests.get(url_template,  headers=headers)
-    if response.status_code == 200:
-        counter = count_clicks(bitly_token, parsed_url)
-        print('Всего кликов по ссылке:', counter)
-    else:
-        bitlink = cut_link(token, url)
-        print('Битлинк:', bitlink)
-
+    response.raise_for_status()
 
 
 if __name__ == '__main__':
     load_dotenv()
     bitly_token = os.getenv('BITLY_TOKEN')
     url = input('Введите ссылку: ')
-    check_bitlink(url, bitly_token)
+    try:
+        check_bitlink(url, bitly_token)
+        counter = count_clicks(bitly_token, url)
+        print('Всего кликов по ссылке:', counter)
+    except requests.exceptions.HTTPError:
+        bitlink = cut_link(bitly_token, url)
+        print('Битлинк:', bitlink)
+
+
