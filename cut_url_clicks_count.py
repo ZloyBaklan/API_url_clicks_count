@@ -34,22 +34,24 @@ def count_clicks(token, bitlink):
 
 
 def check_bitlink(url, token):
-    url_template = f'https://api-ssl.bitly.com/v4/bitlinks/{url}'
+    parsed = urlparse(url)
+    parsed_url = parsed.netloc + parsed.path
+    url_template = f'https://api-ssl.bitly.com/v4/bitlinks/{parsed_url}'
     headers = {
         'Authorization': f'Bearer {token}',
     }
     response = requests.get(url_template,  headers=headers)
-    return response.ok
+    if response.status_code == 200:
+        counter = count_clicks(bitly_token, parsed_url)
+        print('Всего кликов по ссылке:', counter)
+    else:
+        bitlink = cut_link(token, url)
+        print('Битлинк:', bitlink)
+
 
 
 if __name__ == '__main__':
     load_dotenv()
     bitly_token = os.getenv('BITLY_TOKEN')
     url = input('Введите ссылку: ')
-    try:
-        check_bitlink(url, bitly_token) is True
-        counter = count_clicks(bitly_token, url)
-        print('Всего кликов по ссылке:', counter)
-    except requests.exceptions.HTTPError:
-        bitlink = cut_link(bitly_token, url)
-        print('Битлинк:', bitlink)
+    check_bitlink(url, bitly_token)
