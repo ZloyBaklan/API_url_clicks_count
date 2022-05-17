@@ -17,11 +17,9 @@ def cut_link(token, url):
     return response.json()["link"]
 
 
-def count_clicks(token, bitlink):
-    parsed = urlparse(bitlink)
-    parsed_summary = parsed.netloc + parsed.path
+def count_clicks(token, parsed_bitlink):
     url_template = 'https://api-ssl.bitly.com/v4/bitlinks/' \
-                   f'{parsed_summary}/clicks/summary'
+                   f'{parsed_bitlink}/clicks/summary'
     headers = {
         'Authorization': f'Bearer {token}',
     }
@@ -34,9 +32,7 @@ def count_clicks(token, bitlink):
 
 
 def check_bitlink(url, token):
-    parsed = urlparse(url)
-    parsed_url = parsed.netloc + parsed.path
-    url_template = f'https://api-ssl.bitly.com/v4/bitlinks/{parsed_url}'
+    url_template = f'https://api-ssl.bitly.com/v4/bitlinks/{url}'
     headers = {
         'Authorization': f'Bearer {token}',
     }
@@ -49,11 +45,11 @@ if __name__ == '__main__':
     bitly_token = os.getenv('BITLY_TOKEN')
     url = input('Введите ссылку: ')
     try:
-        check_bitlink(url, bitly_token)
-        counter = count_clicks(bitly_token, url)
+        parsed = urlparse(url)
+        parsed_url = parsed.netloc + parsed.path
+        check_bitlink(parsed_url, bitly_token)
+        counter = count_clicks(bitly_token, parsed_url)
         print('Всего кликов по ссылке:', counter)
     except requests.exceptions.HTTPError:
         bitlink = cut_link(bitly_token, url)
         print('Битлинк:', bitlink)
-
-
