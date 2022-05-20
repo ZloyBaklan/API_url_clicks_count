@@ -1,3 +1,4 @@
+from tabnanny import check
 import requests
 import os
 from dotenv import load_dotenv
@@ -37,19 +38,19 @@ def check_bitlink(url, token):
         'Authorization': f'Bearer {token}',
     }
     response = requests.get(url_template,  headers=headers)
-    response.raise_for_status()
+    return response.ok
 
 
 if __name__ == '__main__':
     load_dotenv()
     bitly_token = os.getenv('BITLY_TOKEN')
     url = input('Введите ссылку: ')
-    try:
-        parsed = urlparse(url)
-        parsed_url = parsed.netloc + parsed.path
-        check_bitlink(parsed_url, bitly_token)
-        counter = count_clicks(bitly_token, parsed_url)
-        print('Всего кликов по ссылке:', counter)
-    except requests.exceptions.HTTPError:
+    parsed = urlparse(url)
+    parsed_url = parsed.netloc + parsed.path
+    response = check_bitlink(parsed_url, bitly_token)
+    if response is False:
         bitlink = cut_link(bitly_token, url)
         print('Битлинк:', bitlink)
+    else:
+        counter = count_clicks(bitly_token, parsed_url)
+        print('Всего кликов по ссылке:', counter)       
