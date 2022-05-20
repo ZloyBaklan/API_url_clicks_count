@@ -14,6 +14,8 @@ def cut_link(token, url):
         'long_url': url,
     }
     response = requests.post(url_template, headers=headers, json=payload)
+    if not response.ok:
+        raise Exception('Ошибка преобразования в короткую ссылку.')
     response.raise_for_status()
     return response.json()["link"]
 
@@ -28,6 +30,8 @@ def count_clicks(token, parsed_bitlink):
         'units': '-1'
     }
     response = requests.get(url_template, params, headers=headers)
+    if not response.ok:
+        raise Exception('Ошибка подсчета переходов по ссылке.')
     response.raise_for_status()
     return response.json()["total_clicks"]
 
@@ -47,10 +51,14 @@ if __name__ == '__main__':
     url = input('Введите ссылку: ')
     parsed = urlparse(url)
     parsed_url = parsed.netloc + parsed.path
-    response = check_bitlink(parsed_url, bitly_token)
-    if response is False:
-        bitlink = cut_link(bitly_token, url)
-        print('Битлинк:', bitlink)
-    else:
-        counter = count_clicks(bitly_token, parsed_url)
-        print('Всего кликов по ссылке:', counter)       
+    try:
+        if check_bitlink(parsed_url, bitly_token):
+            counter = count_clicks(bitly_token, parsed_url)
+            print('Всего кликов по ссылке:', counter)   
+        else:
+            bitlink = cut_link(bitly_token, url)
+            print('Битлинк:', bitlink)
+
+    except Exception:
+        print('Ошибка ответа страницы:')
+        raise
