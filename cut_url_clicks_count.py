@@ -1,4 +1,4 @@
-from tabnanny import check
+import argparse
 import requests
 import os
 from dotenv import load_dotenv
@@ -44,15 +44,17 @@ def check_bitlink(url, token):
 if __name__ == '__main__':
     load_dotenv()
     bitly_token = os.getenv('BITLY_TOKEN')
-    url = input('Введите ссылку: ')
-    parsed = urlparse(url)
+    parser = argparse.ArgumentParser(description='Программа сокращения ссылок')
+    parser.add_argument('link', help='Введите вашу ссылку')
+    args = parser.parse_args()
+    parsed = urlparse(args.link)
     parsed_url = parsed.netloc + parsed.path
     try:
         if check_bitlink(parsed_url, bitly_token):
             counter = count_clicks(bitly_token, parsed_url)
             print('Всего кликов по ссылке:', counter)   
         else:
-            bitlink = cut_link(bitly_token, url)
+            bitlink = cut_link(bitly_token, args.link)
             print('Битлинк:', bitlink)
 
     except requests.exceptions.HTTPError:
